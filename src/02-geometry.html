@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02-geometry</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    #container {
+      width: 100vw;
+      height: 100vh;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // 禁用鼠标右键菜单
+      mxEvent.disableContextMenu(container);
+
+      const graph = new mxGraph(container);
+
+      // 设置节点之间可以连接
+      graph.setConnectable(true);
+
+      // 开启区域选择
+      new mxRubberband(graph);
+
+      const parent = graph.getDefaultParent();
+      graph.getModel().beginUpdate();
+      try {
+        // 相对画布定位
+        graph.insertVertex(parent, null, '相对画布定位', 100, 100, 100, 40);
+
+        // 相对父级定位
+        const father = graph.insertVertex(parent, null, '我是爸爸', 300, 100, 200, 100);
+        const sonOfFather = graph.insertVertex(father, null, '我是儿子', 0.5, 0.5, 100, 50, '', true);
+
+        // 连线上的label定位
+        const hello = graph.insertVertex(parent, null, '我是hello', 600, 100, 100, 40);
+        const world = graph.insertVertex(parent, null, '我是world', 800, 300, 100, 40);
+        const lineFromHello2World = graph.insertEdge(parent, null, '我是连线', hello, world);
+        // true, 线条默认的relative是true, 以连线的重点为原点
+        console.log(lineFromHello2World.geometry.relative);
+        // lineFromHello2World.geometry.relative = false; // 如果将relative设置成false，设置x/y的值是无效的
+        lineFromHello2World.geometry.x = 1;
+        lineFromHello2World.geometry.y = 100;
+      } finally {
+        graph.getModel().endUpdate();
+      }
+    }
+
+    window.onload = function() {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+</html>

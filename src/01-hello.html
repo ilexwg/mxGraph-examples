@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01-hello</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    #container {
+      width: 100vw;
+      height: 100vh;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // 禁用鼠标右键菜单
+      mxEvent.disableContextMenu(container);
+
+      const graph = new mxGraph(container);
+
+      // 设置节点之间可以连接
+      graph.setConnectable(true);
+
+      // 开启区域选择
+      new mxRubberband(graph);
+
+      const parent = graph.getDefaultParent();
+      graph.getModel().beginUpdate();
+      try {
+        const v1 = graph.insertVertex(parent, null, 'hello', 20, 20, 80, 30);
+        const v2 = graph.insertVertex(parent, null, 'hello', 220, 220, 80, 30);
+        const e1 = graph.insertEdge(parent, null, '30%', v1, v2);
+      } finally {
+        graph.getModel().endUpdate();
+      }
+    }
+
+    window.onload = function() {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+</html>
