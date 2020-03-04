@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>001 - hello world</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    #container {
+      width: 100vw;
+      height: 100vh;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      if (!mxClient.isBrowserSupported) {
+        mxUtils.error('Browser is not supported!', 300, true);
+      } else {
+        const model = new mxGraphModel();
+        const graph = new mxGraph(container, model);
+        const parent = graph.getDefaultParent();
+
+        model.beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, 'hello', 100, 100, 100, 40);
+          const v2 = graph.insertVertex(parent, null, 'world', 300, 300, 100, 40);
+          const e1 = graph.insertEdge(parent, null, 'line', v1, v2);
+        } finally {
+          model.endUpdate();
+        }
+      }
+    }
+
+    window.addEventListener('load', () => {
+      const container = document.getElementById('container');
+      main(container);
+    });
+  </script>
+</body>
+
+</html>
