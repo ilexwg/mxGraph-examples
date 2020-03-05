@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>005 - IO</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    #container {
+      width: 100vw;
+      height: 100vh;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      if (!mxClient.isBrowserSupported) {
+        mxUtils.error('Browser is not supported!', 300, true);
+      } else {
+        const object = new Object();
+        object.myBool = true;
+        object.myObject = new Object();
+        object.myObject.name = 'Test';
+        object.myArray = ['a', ['b', 'c'], 'd'];
+
+        const encoder = new mxCodec();
+        const node = encoder.encode(object);
+        mxUtils.popup(mxUtils.getXml(node, '\r'));
+      }
+    }
+
+    window.addEventListener('load', () => {
+      const container = document.getElementById('container');
+      main(container);
+    });
+  </script>
+</body>
+
+</html>
