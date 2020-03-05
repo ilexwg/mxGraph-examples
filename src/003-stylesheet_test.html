@@ -35,15 +35,25 @@
         const parent = graph.getDefaultParent();
 
         const stylesheet = graph.getStylesheet();
+
         const vertexStyle = stylesheet.getDefaultVertexStyle();
         vertexStyle[mxConstants.STYLE_ROUNDED] = true;
+
         const edgeStyle = stylesheet.getDefaultEdgeStyle();
         edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.TopToBottom;
         edgeStyle[mxConstants.STYLE_ROUNDED] = true;
 
+
         graph.getModel().beginUpdate();
         try {
           const hello = graph.insertVertex(parent, null, 'hello', 100, 100, 100, 40);
+
+          // change style by cell self
+          hello.setStyle('strokeColor=pink;');
+
+          // change style by graph model
+          graph.getModel().setStyle(hello, 'fillColor=aqua;');
+
           const world = graph.insertVertex(parent, null, 'world', 300, 300, 100, 40);
           const edge = graph.insertEdge(parent, null, 'hello -> world', hello, world);
         } finally {
