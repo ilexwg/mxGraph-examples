@@ -36,8 +36,10 @@
 
         const stylesheet = graph.getStylesheet();
 
+        console.log(stylesheet);
+
         const vertexStyle = stylesheet.getDefaultVertexStyle();
-        vertexStyle[mxConstants.STYLE_ROUNDED] = true;
+        // vertexStyle[mxConstants.STYLE_ROUNDED] = true;
 
         const edgeStyle = stylesheet.getDefaultEdgeStyle();
         edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.TopToBottom;
@@ -56,6 +58,17 @@
 
           const world = graph.insertVertex(parent, null, 'world', 300, 300, 100, 40);
           const edge = graph.insertEdge(parent, null, 'hello -> world', hello, world);
+
+          const father = graph.insertVertex(parent, null, 'father', 600, 200, 200, 200);
+          const son = graph.insertVertex(father, null, 'son(0, 0)', 0, 0, 50, 50, '', true);
+          son.geometry.offset = {
+            x: 100,
+            y: 0
+          };
+
+          const one = graph.insertVertex(parent, null, 'one', 200, 400, 100, 40);
+          const two = graph.insertVertex(parent, null, 'two', 200, 600, 100, 40);
+          const one2two = graph.insertEdge(parent, null, 'one to two', one, two);
         } finally {
           graph.getModel().endUpdate();
         }
