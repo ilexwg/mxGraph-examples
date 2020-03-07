@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>01-hello</title>
+  <title>01-Hello World for mxGraph</title>
   <style>
     * {
       padding: 0;
       margin: 0;
     }
+
     #container {
       width: 100vw;
       height: 100vh;
@@ -16,6 +18,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="container"></div>
 
@@ -25,33 +28,44 @@
   <script src="../mxgraph/mxClient.js"></script>
   <script>
     function main(container) {
-      // 禁用鼠标右键菜单
-      mxEvent.disableContextMenu(container);
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, SVGComponentTransferFunctionElement);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
 
-      const graph = new mxGraph(container);
+        // Create the graph
+        const graph = new mxGraph(container);
 
-      // 设置节点之间可以连接
-      graph.setConnectable(true);
+        // Enable rubberband selection
+        new mxRubberband(graph);
 
-      // 开启区域选择
-      new mxRubberband(graph);
+        // Get the default parent
+        const parent = graph.getDefaultParent();
 
-      const parent = graph.getDefaultParent();
-      graph.getModel().beginUpdate();
-      try {
-        const v1 = graph.insertVertex(parent, null, 'hello', 20, 20, 80, 30);
-        const v2 = graph.insertVertex(parent, null, 'hello', 220, 220, 80, 30);
-        const e1 = graph.insertEdge(parent, null, '30%', v1, v2);
-      } finally {
-        graph.getModel().endUpdate();
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          // Add two vertices
+          const hello = graph.insertVertex(parent, null, 'hello', 20, 20, 80, 30);
+          const world = graph.insertVertex(parent, null, 'world', 220, 220, 80, 30);
+
+          // Add edge from hello -> world
+          const hello2world = graph.insertEdge(parent, null, 'hello -> world', hello, world);
+        } finally {
+          graph.getModel().endUpdate();
+        }
       }
     }
 
-    window.onload = function() {
+    window.onload = function () {
       const container = document.getElementById('container');
 
       main(container);
     };
   </script>
 </body>
+
 </html>
