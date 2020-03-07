@@ -31,7 +31,7 @@
       // Check if the browser is supported
       if (!mxClient.isBrowserSupported()) {
         // Display an error message if the browser is not supported
-        mxUtils.error('This browser is not supported!', 300, SVGComponentTransferFunctionElement);
+        mxUtils.error('This browser is not supported!', 300, true);
       } else {
         // Disable the built-in context-menu
         mxEvent.disableContextMenu(container);
