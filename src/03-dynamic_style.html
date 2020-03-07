@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03-Dynamic style demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 60vw;
+      height: 60vh;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Enable rubberband selection
+        new mxRubberband(graph);
+
+        // Disable move edge
+        graph.setAllowDanglingEdges(false);
+
+        // Disable edge movable
+        graph.setEdgeLabelsMovable(false);
+
+        // Needs to set a flag to check for dynamic style changes,
+        // that is, changes to styles on cells where the style was
+        // not explicitely changed using mxStyleChange
+        graph.getView().updateStyle = true;
+
+        // Overrides mxGraphModel.getStyle to return a specific style
+        // for edges that reflects their target terminal (in this case
+        // the strokeColor will be equal to the target's fillColor).
+        const getStyle = graph.model.getStyle;
+        graph.model.getStyle = function (cell) {
+          if (cell != null) {
+            let style = getStyle.apply(this, arguments);
+
+            if (cell.isEdge()) {
+              const target = cell.getTerminal(false);
+
+              if (target != null) {
+                const state = graph.getView().getState(target);
+                const targetStyle = state != null ? state.style : graph.getCellStyle(target);
+                const fillColor = mxUtils.getValue(targetStyle, mxConstants.STYLE_FILLCOLOR);
+
+                if (fillColor != null) {
+                  style += `;strokeColor=${fillColor};`;
+                }
+              }
+            } else if (cell.isVertex()) {
+              const geometry = cell.getGeometry();
+
+              // When the vertex's height >= 50px, the fill color will change to orange
+              if (geometry != null && geometry.height >= 50) {
+                style += ';fillColor=orange;';
+              }
+            }
+
+            return style;
+          }
+
+          return null;
+        };
+
+        // Get the default parent
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          // Add three vertices
+          const hello = graph.insertVertex(parent, null, 'hello', 20, 20, 100, 40, 'fillColor=lightblue;');
+          const world = graph.insertVertex(parent, null, 'world', 220, 220, 100, 40, 'fillColor=pink;');
+          const other = graph.insertVertex(parent, null, 'other', 20, 220, 100, 40, 'fillColor=#38f');
+
+          // Add edge from hello -> world
+          const hello2world = graph.insertEdge(parent, null, 'hello -> world', hello, world,
+            'perimeterSpacing=4;labelBackgroundColor=#ccc;strokeWidth=4;fontStyle=1;');
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
