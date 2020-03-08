@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05-Indicators demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Enable graph connectable
+        graph.setConnectable(true);
+
+        // Enable rubberband selection
+        new mxRubberband(graph);
+
+        // Disable move edge
+        graph.setAllowDanglingEdges(false);
+
+        // Disable edge movable
+        graph.setEdgeLabelsMovable(false);
+
+        // define the basic indicator style
+        const style = graph.getStylesheet().getDefaultVertexStyle();
+        style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_LABEL;
+        style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM;
+        // style[mxConstants.STYLE_INDICATOR_SHAPE] = mxConstants.SHAPE_ELLIPSE;
+        style[mxConstants.STYLE_INDICATOR_WIDTH] = 56;
+        style[mxConstants.STYLE_INDICATOR_HEIGHT] = 56;
+        style[mxConstants.STYLE_INDICATOR_COLOR] = 'yellowgreen';
+        style[mxConstants.STYLE_INDICATOR_STROKECOLOR] = 'red';
+        style[mxConstants.STYLE_IMAGE_ALIGN] = mxConstants.ALIGN_CENTER;
+        style[mxConstants.STYLE_IMAGE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP;
+        style[mxConstants.STYLE_SPACING] = 10;
+        style[mxConstants.STYLE_FONTSIZE] = 14;
+        delete style[mxConstants.STYLE_FILLCOLOR];
+        delete style[mxConstants.STYLE_STROKECOLOR];
+
+        // define the 'indicator' stylesheet for image indicator
+        const indicatorStylesheet = mxUtils.clone(style);
+        delete indicatorStylesheet[mxConstants.STYLE_INDICATOR_SHAPE];
+        indicatorStylesheet[mxConstants.STYLE_INDICATOR_IMAGE] = 'images/icons/gear.png';
+        graph.getStylesheet().putCellStyle('indicator', indicatorStylesheet);
+
+        // define the edge style
+        const edgeStyle = graph.getStylesheet().getDefaultEdgeStyle();
+        edgeStyle[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+        edgeStyle[mxConstants.STYLE_ELBOW] = mxConstants.ELBOW_VERTICAL;
+        edgeStyle[mxConstants.STYLE_ROUNDED] = true;
+
+        // Get the default parent
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          graph.insertVertex(parent, null, 'top label', 100, 100, 100, 100, 'indicatorShape=actor;verticalAlign=top;imageVerticalAlign=bottom;indicatorColor=red;');
+          graph.insertVertex(parent, null, 'bottom label', 250, 250, 100, 100, 'indicatorShape=ellipse;');
+          graph.insertVertex(parent, null, 'right label', 400, 400, 150, 100, 'indicatorShape=cloud;align=right;verticalAlign=middle;imageAlign=left;imageVerticalAlign=middle;indicatorColor=blue;');
+          graph.insertVertex(parent, null, 'left label\nimage indicator', 100, 400, 180, 100, 'indicator;align=center;verticalAlign=middle;imageAlign=right;imageVerticalAlign=middle;spacingRight=70;');
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
