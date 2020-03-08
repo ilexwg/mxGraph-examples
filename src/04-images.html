@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04-Images demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function configureStylesheet(graph) {
+      // define the 'image' stylesheet
+      let style = {
+        [mxConstants.STYLE_SHAPE]: mxConstants.SHAPE_IMAGE,
+        [mxConstants.STYLE_IMAGE]: 'images/icons/keys.png',
+        [mxConstants.STYLE_PERIMETER]: mxPerimeter.RectanglePerimeter,
+        [mxConstants.STYLE_ROUNDED]: true,
+        [mxConstants.STYLE_FONTCOLOR]: '#ffffff'
+      };
+      graph.getStylesheet().putCellStyle('image', style);
+
+      // define the 'bottom' stylesheet
+      style = mxUtils.clone(style);
+      style = Object.assign({}, style, {
+        [mxConstants.STYLE_SHAPE]: mxConstants.SHAPE_LABEL,
+        [mxConstants.STYLE_STROKECOLOR]: 'orange',
+        [mxConstants.STYLE_ALIGN]: mxConstants.ALIGN_CENTER,
+        [mxConstants.STYLE_VERTICAL_ALIGN]: mxConstants.ALIGN_BOTTOM,
+        [mxConstants.STYLE_IMAGE]: 'images/icons/gear.png',
+        [mxConstants.STYLE_IMAGE_WIDTH]: 48,
+        [mxConstants.STYLE_IMAGE_HEIGHT]: 48,
+        [mxConstants.STYLE_IMAGE_ALIGN]: mxConstants.ALIGN_CENTER,
+        [mxConstants.STYLE_IMAGE_VERTICAL_ALIGN]: mxConstants.ALIGN_TOP,
+        [mxConstants.STYLE_SPACING]: 8
+      });
+      graph.getStylesheet().putCellStyle('bottom', style);
+
+      // define the 'top' stylesheet
+      style = mxUtils.clone(style);
+      style = Object.assign({}, style, {
+        [mxConstants.STYLE_IMAGE]: 'images/icons/server.png',
+        [mxConstants.STYLE_VERTICAL_ALIGN]: mxConstants.ALIGN_TOP,
+        [mxConstants.STYLE_IMAGE_VERTICAL_ALIGN]: mxConstants.ALIGN_BOTTOM
+      });
+      graph.getStylesheet().putCellStyle('top', style);
+
+      // define the 'left' stylesheet
+      style = mxUtils.clone(style);
+      style = Object.assign({}, style, {
+        [mxConstants.STYLE_IMAGE]: 'images/icons/earth.png',
+        [mxConstants.STYLE_ALIGN]: mxConstants.ALIGN_CENTER,
+        [mxConstants.STYLE_VERTICAL_ALIGN]: mxConstants.ALIGN_MIDDLE,
+        [mxConstants.STYLE_IMAGE_ALIGN]: mxConstants.ALIGN_RIGHT,
+        [mxConstants.STYLE_IMAGE_VERTICAL_ALIGN]: mxConstants.ALIGN_MIDDLE,
+        [mxConstants.STYLE_SPACING_RIGHT]: 56
+      });
+      graph.getStylesheet().putCellStyle('left', style);
+
+      // define the 'right' stylesheet
+      style = mxUtils.clone(style);
+      delete style[mxConstants.STYLE_SPACING_RIGHT];
+      style = Object.assign({}, style, {
+        [mxConstants.STYLE_ALIGN]: mxConstants.ALIGN_CENTER,
+        [mxConstants.STYLE_IMAGE_ALIGN]: mxConstants.ALIGN_LEFT,
+        [mxConstants.STYLE_SPACING_LEFT]: 56
+      });
+      graph.getStylesheet().putCellStyle('right', style);
+    }
+
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Enable rubberband selection
+        new mxRubberband(graph);
+
+        // Disable edge movable
+        graph.setEdgeLabelsMovable(false);
+
+        configureStylesheet(graph);
+
+        // Get the default parent
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          var top = graph.insertVertex(parent, null, 'First line\nSeconde line', 250, 75, 100, 100, 'top;');
+          var left = graph.insertVertex(parent, null, 'First line\nSeconde line', 55, 250, 140, 100, 'left');
+          var image = graph.insertVertex(parent, null, '', 250, 250, 100, 100, 'image;');
+          var right = graph.insertVertex(parent, null, 'First line\nSeconde line', 405, 250, 140, 100, 'right;');
+          var bottom = graph.insertVertex(parent, null, 'First line\nSeconde line', 250, 425, 100, 100, 'bottom;');
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
