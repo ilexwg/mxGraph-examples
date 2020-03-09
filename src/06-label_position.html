@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>06-Label position demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Enable graph connectable
+        graph.setConnectable(true);
+
+        // Enable rubberband selection
+        new mxRubberband(graph);
+
+        // Disable move edge
+        graph.setAllowDanglingEdges(false);
+
+        // Disable edge movable
+        graph.setEdgeLabelsMovable(false);
+
+        // Defines the common part of all cell styles as a string-prefix
+        const prefix = 'shape=image;image=images/icons/earth.png;';
+
+        // Get the default parent
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          graph.insertVertex(parent, null, 'top', 250, 100, 100, 100, `${prefix}verticalLabelPosition=top;verticalAlign=bottom;`);
+          graph.insertVertex(parent, null, 'left', 100, 250, 100, 100, `${prefix}labelPosition=left;align=right;`);
+          graph.insertVertex(parent, null, 'right', 400, 250, 100, 100, `${prefix}labelPosition=right;align=left;`);
+          graph.insertVertex(parent, null, 'bottom', 250, 400, 100, 100, `${prefix}verticalLabelPosition=bottom;verticalAlign=top;`);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
