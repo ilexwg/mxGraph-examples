@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07-Two label demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        new mxKeyHandler(graph);
+
+        graph.setHtmlLabels(true);
+        graph.setVertexLabelsMovable(false);
+
+        // Enables wrapping for vertex labels
+        // graph.isWrapping = function(cell)
+        // {
+        // 	return this.model.isCollapsed(cell);
+        // };
+
+        // Enables clipping of vertex labels if no offset is defined
+        // graph.isLabelClipped = function(cell)
+        // {
+        // 	var geometry = this.model.getGeometry(cell);
+
+        // 	return geometry != null && !geometry.relative && (geometry.offset == null ||
+        // 		(geometry.offset.x == 0 && geometry.offset.y == 0));
+        // };
+
+        graph.getLabel = function (cell) {
+          const geometry = cell.getGeometry();
+          const label = mxGraph.prototype.getLabel.apply(this, arguments);
+
+          if (!this.model.isCollapsed(cell) && geometry != null && (geometry.offset == null || (geometry.offset.x == 0 && geometry.offset.y == 0)) && this.model.isVertex(cell) && geometry.width >= 2) {
+            const style = this.getCellStyle(cell);
+            const fontSize = style[mxConstants.STYLE_FONTSIZE] || mxConstants.DEFAULT_FONTSIZE;
+            const max = geometry.width / (fontSize * 0.625);
+
+            if (label.length > max) {
+              return label.substring(0, max) + '...';
+            }
+          }
+
+          return label;
+        }
+
+        // Enable graph connectable
+        graph.setConnectable(true);
+
+        // Enable rubberband selection
+        new mxRubberband(graph);
+
+        // Disable move edge
+        graph.setAllowDanglingEdges(false);
+
+        // Disable edge movable
+        graph.setEdgeLabelsMovable(false);
+
+
+        // Set basic vertex and edge style
+        const vertexStyle = graph.getStylesheet().getDefaultVertexStyle();
+        vertexStyle[mxConstants.STYLE_FONTSIZE] = 14;
+        const edgeStyle = graph.getStylesheet().getDefaultEdgeStyle();
+        edgeStyle[mxConstants.STYLE_FONTSIZE] = 14;
+
+        // Get the default parent
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, 'vertexLabelsMovable', 100, 100, 100, 40);
+          const label11 = graph.insertVertex(v1, null, 'label1', 0.2, -0.3, 0, 0, null, true);
+          const label12 = graph.insertVertex(v1, null, 'label2', 0.2, 1.2, 0, 0, null, true);
+
+          const v2 = graph.insertVertex(parent, null,
+            'Wrapping and clipping is enabled only if the cell is collapsed, otherwise the label is truncated if there is no manual offset.',
+            300, 300, 100, 40);
+          v2.geometry.alternateBounds = new mxRectangle(0, 0, 100, 40);
+          const label21 = graph.insertVertex(v2, null, 'label1', 0.8, 0, 0, 0, null, true);
+          console.log(label21.geometry);
+          label21.geometry.offset = {
+            x: 0,
+            y: -10
+          };
+          const label22 = graph.insertVertex(v2, null, 'label2', 0.8, 1.2, 0, 0, null, true);
+
+          const e1 = graph.insertEdge(parent, null, 'edgeLabelsMovable', v1, v2);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
