@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08-Simple click demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Disable basic cell selection and handling
+        graph.setEnabled(false);
+
+        // Highlight cell
+        const highlight = new mxCellTracker(graph, '#00ff00');
+
+        // Just highlight vertex
+        // const highlight = new mxCellTracker(graph, '#00ff00', function(me) {
+        //   return me && me.getCell() && me.getCell().isVertex() ? me.getCell() : null;
+        // });
+
+        // Enables tooltips for the overlays
+        graph.setTooltips(true);
+
+        graph.addListener(mxEvent.CLICK, function(sender, evt) {
+          const cell = evt.getProperty('cell');
+          if (cell) {
+            if (cell.isVertex()) {
+              console.log('vertex');
+            } else if (cell.isEdge()) {
+              console.log('edge');
+            }
+          }
+        });
+
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, 'click', 100, 100, 100, 40);
+
+          const v2 = graph.insertVertex(parent, null,
+            'double click',
+            300, 300, 100, 40);
+
+          const e1 = graph.insertEdge(parent, null, 'bridge', v1, v2);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
