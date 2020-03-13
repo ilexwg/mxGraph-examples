@@ -68,6 +68,13 @@
           }
         });
 
+        graph.addListener(mxEvent.DOUBLE_CLICK, function(sender, evt) {
+          const cell = evt.getProperty('cell');
+          if (cell && cell.isVertex() && cell.value === 'double click') {
+            alert(cell.value);
+          }
+        });
+
         const parent = graph.getDefaultParent();
 
         // Add cells to the model
