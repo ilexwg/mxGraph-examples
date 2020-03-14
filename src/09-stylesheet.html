@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09-Stylesheet demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Disable basic cell selection and handling
+        graph.setEnabled(false);
+
+        // Enables tooltips for the overlays
+        graph.setTooltips(true);
+        graph.getTooltip = function(state) {
+          const cell = state.cell;
+          const model = this.getModel();
+
+          if (cell.isEdge()) {
+            const source = this.getLabel(model.getTerminal(cell, true));
+            const target = this.getLabel(model.getTerminal(cell, false));
+
+            return source + ' -> ' + target;
+          } else {
+            return this.getLabel(cell);
+          }
+        };
+
+        // Return a special label for edges.
+        graph.getLabel = function(cell) {
+          const label = mxGraph.prototype.getLabel.apply(this, arguments);
+          if (this.getModel().isEdge(cell)) {
+            return 'Transfer ' + label;
+          }
+
+          return label;
+        };
+
+        // Create the default style for vertices
+        const vertexStyle = {
+          [mxConstants.STYLE_SHAPE]: mxConstants.SHAPE_RECTANGLE,
+          [mxConstants.STYLE_PERIMETER]: mxPerimeter.RectanglePerimeter,
+          [mxConstants.STYLE_STROKECOLOR]: 'gray',
+          [mxConstants.STYLE_ROUNDED]: true,
+          [mxConstants.STYLE_FILLCOLOR]: '#eeeeee',
+          [mxConstants.STYLE_GRADIENTCOLOR]: '#ffffff',
+          [mxConstants.STYLE_FONTCOLOR]: '#774400',
+          [mxConstants.STYLE_ALIGN]: mxConstants.ALIGN_CENTER,
+          [mxConstants.STYLE_VERTICAL_ALIGN]: mxConstants.ALIGN_MIDDLE,
+          [mxConstants.STYLE_FONTSIZE]: 12,
+          [mxConstants.STYLE_FONTSTYLE]: 1
+        };
+        graph.getStylesheet().putDefaultVertexStyle(vertexStyle);
+
+        // Create the default style for edges
+        const edgeStyle = {
+          [mxConstants.STYLE_SHAPE]: mxConstants.SHAPE_CONNECTOR,
+          [mxConstants.STYLE_STROKECOLOR]: '#6482B9',
+          [mxConstants.STYLE_ALIGN]: mxConstants.ALIGN_CENTER,
+          [mxConstants.STYLE_VERTICAL_ALIGN]: mxConstants.ALIGN_MIDDLE,
+          [mxConstants.STYLE_EDGE]: mxEdgeStyle.ElbowConnector,
+          [mxConstants.STYLE_ROUNDED]: true,
+          [mxConstants.STYLE_ENDARROW]: mxConstants.ARROW_BLOCK,
+          [mxConstants.STYLE_FONTSIZE]: 10
+        };
+        graph.getStylesheet().putDefaultEdgeStyle(edgeStyle);
+
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          var v1 = graph.insertVertex(parent, null, 'Interval 1', 20, 20, 180, 30);
+					var v2 = graph.insertVertex(parent, null, 'Interval 2', 140, 80, 280, 30);
+          var v5 = graph.insertVertex(parent, null, 'Interval 5', 60, 260, 400, 30);
+
+					var e1 = graph.insertEdge(parent, null, '1', v1, v2);
+					e1.getGeometry().points = [{x: 160, y: 60}];
+					var e2 = graph.insertEdge(parent, null, '2', v1, v5);
+					e2.getGeometry().points = [{x: 80, y: 60}];
+					var e3 = graph.insertEdge(parent, null, '3', v2, v5);
+					e3.getGeometry().points = [{x: 280, y: 120}];
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
