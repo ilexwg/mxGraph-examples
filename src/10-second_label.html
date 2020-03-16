@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>10-Second label demo</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    // Simple solution to add additional text to the rectangle shape definition:
+    (function () {
+      var mxRectangleShapeIsHtmlAllowed = mxRectangleShape.prototype.isHtmlAllowed;
+      mxRectangleShape.prototype.isHtmlAllowed = function () {
+        return mxRectangleShapeIsHtmlAllowed.apply(this, arguments) && this.state == null;
+      };
+
+      mxRectangleShapePaintForeground = mxRectangleShape.prototype.paintForeground;
+      mxRectangleShape.prototype.paintForeground = function (c, x, y, w, h) {
+        if (this.state != null && this.state.cell.geometry != null && !this.state.cell.geometry.relative) {
+          c.setFontColor('#f40');
+          c.text(x + 2, y + 2, 0, 0, this.state.cell.id, 'left', 'top');
+        }
+
+        mxRectangleShapePaintForeground.apply(this, arguments);
+      };
+    })();
+
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // Create the graph
+        const graph = new mxGraph(container);
+
+        // Disables the folding icon
+        graph.isCellFoldable = function(cell) {
+          return false;
+        }
+
+        // Disable basic cell selection and handling
+        graph.setEnabled(false);
+
+        let secondLabelVisible = true;
+
+        // Hook for returning shape number for a given cell
+        graph.getSecondLabel = function(cell) {
+          if (!cell.isEdge()) {
+            return `The ID of this cell is ${cell.id}`;
+          }
+        };
+
+        let relativeChildVerticesVisible = true;
+
+        graph.isCellVisible = function(cell) {
+          console.log(cell.value, cell.isVertex());
+          return !this.model.isVertex(cell) || cell.geometry == null || !cell.geometry.relative || cell.geometry.relative == relativeChildVerticesVisible;
+        };
+
+        const parent = graph.getDefaultParent();
+
+        // Add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, 'Hello', 100, 100, 100, 50);
+          const v11 = graph.insertVertex(v1, null, 'HELLO', 1, 1, 0, 0,
+            'align=left;verticalAlign=top;labelBackgroundColor=orange;labelBorderColor=#ccc;', true);
+          v11.geometry.offset = new mxPoint(-8, -8);
+
+          const v2 = graph.insertVertex(parent, null, 'World', 300, 300, 100, 50);
+          const v21 = graph.insertVertex(v2, null, 'WORLD', 1, 1, 0, 0,
+            'align=center;verticalAlign=middle;fillColor=orange;rounded=1;spacingLeft=4;spacingRight=4;', true);
+          v21.geometry.offset = new mxPoint(-4, -4);
+          graph.updateCellSize(v21);
+
+          const e1 = graph.insertEdge(parent, null, 'Hello -> World', v1, v2);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
