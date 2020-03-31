@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11-layers</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // create root
+        const root = new mxCell();
+
+        // create layers
+        const layer0 = root.insert(new mxCell());
+        const layer1 = root.insert(new mxCell());
+
+        // create the model
+        const model = new mxGraphModel(root);
+
+        // create the graph
+        const graph = new mxGraph(container, model);
+
+        // disable basic cell selection and handling
+        graph.setEnabled(false);
+
+        // get the default parent for inserting new cells
+        // this is normally the first child of the root (ie. layer 0)
+        const parent = graph.getDefaultParent();
+
+        // add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(layer1, null, 'Hello: layer1', 20, 20, 80, 30, 'fillColor=#c0c0c0;');
+          const v2 = graph.insertVertex(layer1, null, 'Hello: layer1', 200, 20, 80, 30, 'fillColor=#c0c0c0;');
+          const v3 = graph.insertVertex(layer0, null, 'World: layer0', 110, 150, 80, 30);
+
+          const e1 = graph.insertEdge(layer1, null, 'layer1', v1, v3, 'strokeColor=#0c0c0c;');
+          e1.geometry.points = [new mxPoint(60, 165)];
+          const e2 = graph.insertEdge(layer0, null, 'layer0', v2, v3);
+          e2.geometry.points = [new mxPoint(240, 165)];
+          const e3 = graph.insertEdge(layer0, null, 'layer0', v1, v2, 'edgeStyle=topToBottomEdgeStyle;');
+          e3.geometry.points = [new mxPoint(150, 30)];
+          const e4 = graph.insertEdge(layer1, null, 'layer1', v2, v1,
+            'strokeColor=#0c0c0c;edgeStyle=topToBottomEdgeStyle;');
+          e4.geometry.points = [new mxPoint(150, 40)];
+        } finally {
+          graph.getModel().endUpdate();
+        }
+
+        // add two buttons to set layer0/1 visible state
+        document.body.appendChild(mxUtils.button('Layer 0', () => {
+          model.setVisible(layer0, !model.isVisible(layer0));
+        }));
+
+        document.body.appendChild(mxUtils.button('Layer 1', () => {
+          model.setVisible(layer1, !model.isVisible(layer1));
+        }));
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
