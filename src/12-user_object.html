@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>12-User Object</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    body * {
+      font-family: Montserrat, Arial, Helvetica, sans-serif;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      background-color: #fefefe;
+    }
+
+    .tool {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 0 0 120px;
+      height: 120px;
+    }
+
+    .view-xml {
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .content {
+      display: flex;
+      justify-content: center;
+      flex: 1;
+    }
+
+    #container {
+      border-radius: 4px;
+      background-color: #f5f6f7;
+    }
+
+    .desc {
+      align-self: start;
+      max-height: 600px;
+      margin-left: 20px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+    <div class="tool">
+      <button class="view-xml">View XML</button>
+    </div>
+    <div class="content">
+      <div id="container"></div>
+      <div class="desc">
+        Nothing selected.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    /**
+     * change the default style of vertex and edge
+     */
+    function changeDefaultStyle(graph) {
+      // change the default style of vertex
+      let style = graph.getStylesheet().getDefaultVertexStyle();
+      style[mxConstants.STYLE_STROKECOLOR] = 'gray';
+      style[mxConstants.STYLE_ROUNDED] = true;
+      style[mxConstants.STYLE_SHADOW] = true;
+      style[mxConstants.STYLE_FILLCOLOR] = '#dfdfdf';
+      style[mxConstants.STYLE_GRADIENTCOLOR] = 'white';
+      style[mxConstants.STYLE_FONTCOLOR] = 'black';
+      style[mxConstants.STYLE_FONTSIZE] = 12;
+      style[mxConstants.STYLE_SPACING] = 4;
+
+      // change the default style of edge
+      style = graph.getStylesheet().getDefaultEdgeStyle();
+      style[mxConstants.STYLE_STROKECOLOR] = '#0c0c0c';
+      style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = 'white';
+      style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector;
+      style[mxConstants.STYLE_ROUNDED] = true;
+      style[mxConstants.STYLE_FONTCOLOR] = 'black';
+      style[mxConstants.STYLE_FONTSIZE] = 10;
+    }
+
+    /**
+     * view xml data
+     */
+    function viewXmlHandler(graph) {
+      const encoder = new mxCodec();
+      const node = encoder.encode(graph.getModel());
+      mxUtils.popup(mxUtils.getPrettyXml(node), true);
+    }
+
+    /**
+     * update the property panel
+     */
+    function handleSelectionChanged(graph) {
+      const div = document.querySelector('.desc');
+
+      div.innerHTML = '';
+
+      const cell = graph.getSelectionCell();
+
+      if (cell == null) {
+        mxUtils.writeln(div, 'Nothing selected.');
+      } else {
+        const title = document.createElement('h3');
+        mxUtils.writeln(title, `${cell.value.nodeName} (${cell.id})`);
+        div.appendChild(title);
+
+        const form = new mxForm();
+        const attributes = cell.value.attributes;
+
+        for (let i = 0; i < attributes.length; i++) {
+          console.log(attributes[i].nodeName);
+        }
+      }
+    }
+
+    /**
+     * main function
+     */
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // create the graph
+        const graph = new mxGraph(container);
+
+        // enable rubberband selection
+        new mxRubberband(graph);
+
+        // disable resizing of cells
+        graph.setCellsResizable(false);
+
+        // set graph border
+        graph.setResizeContainer(true);
+        graph.minimumContainerSize = new mxRectangle(0, 0, 500, 500);
+        graph.setBorder(60);
+
+        // new mxKeyHandler(graph);
+
+        // disallow edit edge label
+        graph.isCellEditable = function (cell) {
+          return !cell.isEdge();
+        };
+
+        // disallow dangling of edges
+        graph.setAllowDanglingEdges(false);
+
+        // override convertValueToString
+        graph.convertValueToString = function (cell) {
+          if (mxUtils.isNode(cell.value)) {
+            const nodeName = cell.value.nodeName.toLowerCase();
+            if (nodeName === 'person') {
+              const firstName = cell.getAttribute('firstName', '');
+              const lastName = cell.getAttribute('lastName', '');
+
+              if (firstName.length > 0 && lastName.length > 0) {
+                return `${firstName}, ${lastName}`;
+              } else {
+                return firstName;
+              }
+            } else if (nodeName === 'knows') {
+              return `${nodeName} (Since ${cell.getAttribute('since', '')})`;
+            }
+          }
+        };
+
+        changeDefaultStyle(graph);
+
+        const doc = mxUtils.createXmlDocument();
+
+        const person1 = doc.createElement('Person');
+        person1.setAttribute('firstName', 'Daffy');
+        person1.setAttribute('lastName', 'Duck');
+
+        const person2 = doc.createElement('Person');
+        person2.setAttribute('firstName', 'Bugs');
+        person2.setAttribute('lastName', 'Bunny');
+
+        const relation = doc.createElement('Knows');
+        relation.setAttribute('since', '1985');
+
+        // get the default parent for inserting new cells
+        // this is normally the first child of the root (ie. layer 0)
+        const parent = graph.getDefaultParent();
+
+        // add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, person1, 80, 80, 80, 30);
+          const v2 = graph.insertVertex(parent, null, person2, 200, 200, 80, 30);
+          const e1 = graph.insertEdge(parent, null, relation, v1, v2);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+
+        graph.getSelectionModel().addListener(mxEvent.CHANGE, (sender, evt) => {
+          handleSelectionChanged(graph);
+        });
+
+        return graph;
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+      const viewXmlBtn = document.querySelector('.view-xml');
+
+      const graph = main(container);
+      viewXmlBtn.addEventListener('click', () => {
+        viewXmlHandler(graph);
+      });
+    };
+  </script>
+</body>
+
+</html>
