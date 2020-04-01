@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13-animation</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // Disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // create the graph
+        const graph = new mxGraph(container);
+
+        // disable basic cell selection and handling
+        graph.setEnabled(false);
+
+        const vertexStyle =
+          'shape=cylinder;strokeWidth=2;strokeColor=black;fillColor=#fff;gradientColor=#a0a0a0;fontColor=black;fontStyle=1;spacingTop=14;';
+        const edgeStyle = 'strokeWidth=3;endArrow=block;endSize=2;endFill=1;strokeColor=black;rounded=1;';
+
+        // get the default parent for inserting new cells
+        // this is normally the first child of the root (ie. layer 0)
+        const parent = graph.getDefaultParent();
+
+        // add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const pump = graph.insertVertex(parent, null, 'Pump', 100, 100, 60, 60, vertexStyle);
+          const tank = graph.insertVertex(parent, null, 'Tank', 300, 300, 60, 60, vertexStyle);
+          const pipe = graph.insertEdge(parent, null, '', pump, tank, edgeStyle);
+          pipe.geometry.points = [new mxPoint(330, 130)];
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
