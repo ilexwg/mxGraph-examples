@@ -52,6 +52,7 @@
     .desc {
       align-self: start;
       max-height: 600px;
+      width: 300px;
       margin-left: 20px;
       padding: 20px;
       border: 1px solid #ccc;
@@ -113,6 +114,38 @@
     }
 
     /**
+     * create text field to form
+     */
+    function createTextField(graph, form, cell, attribute) {
+      const input = form.addText(`${attribute.nodeName}:`, attribute.nodeValue);
+
+      mxEvent.addListener(input, 'keypress', (evt) => {
+        if (evt.keyCode === 13 && !mxEvent.isShiftDown(evt)) {
+          input.blur();
+        }
+      });
+
+      mxEvent.addListener(input, 'blur', applyHandler);
+
+      function applyHandler() {
+        input.value = input.value.trim();
+        const newValue = input.value || '';
+        const oldValue = cell.getAttribute(attribute.nodeName);
+
+        if (newValue !== oldValue) {
+          graph.getModel().beginUpdate();
+          try {
+            const edit = new mxCellAttributeChange(cell, attribute.nodeName, newValue);
+            graph.getModel().execute(edit);
+            graph.updateCellSize(cell);
+          } finally {
+            graph.getModel().endUpdate();
+          }
+        }
+      }
+    }
+
+    /**
      * update the property panel
      */
     function handleSelectionChanged(graph) {
@@ -129,12 +162,14 @@
         mxUtils.writeln(title, `${cell.value.nodeName} (${cell.id})`);
         div.appendChild(title);
 
-        const form = new mxForm();
+        const form = new mxForm('my-form');
         const attributes = cell.value.attributes;
 
         for (let i = 0; i < attributes.length; i++) {
-          console.log(attributes[i].nodeName);
+          createTextField(graph, form, cell, attributes[i]);
         }
+
+        div.appendChild(form.getTable());
       }
     }
 
@@ -191,6 +226,59 @@
               return `${nodeName} (Since ${cell.getAttribute('since', '')})`;
             }
           }
+        };
+
+        // enable tooltips
+        graph.setTooltips(true);
+        const getTooltipForCell = graph.getTooltipForCell;
+        graph.getTooltipForCell = function (cell) {
+          if (cell.isEdge()) {
+            const source = this.getLabel(this.getModel().getTerminal(cell, true));
+            const target = this.getLabel(this.getModel().getTerminal(cell, false));
+
+            return `${source} ${cell.value.nodeName.toLowerCase()} ${target} since ${cell.value.getAttribute('since')}`;
+          }
+
+          return getTooltipForCell.apply(this, arguments);
+        };
+
+        // override editing value
+        const getEditingValue = graph.getEditingValue;
+        graph.getEditingValue = function (cell) {
+          if (mxUtils.isNode(cell.value) &&
+            cell.value.nodeName.toLowerCase() === 'person') {
+            const firstName = cell.getAttribute('firstName', '');
+            const lastName = cell.getAttribute('lastName', '');
+
+            return `${firstName} ${lastName}`;
+          }
+        };
+
+        const cellLabelChanged = graph.cellLabelChanged;
+        graph.cellLabelChanged = function (cell, newValue, autoSize) {
+          if (mxUtils.isNode(cell.value) && cell.value.nodeName.toLowerCase() === 'person') {
+            newValue = newValue.trim();
+
+            const names = newValue.split(/\s+/);
+            let firstName = '';
+            let lastName = '';
+
+            if (names.length > 1) {
+              firstName = names[0];
+              lastName = names[names.length - 1];
+            } else {
+              firstName = newValue;
+            }
+
+            const elt = cell.value.cloneNode(true);
+            elt.setAttribute('firstName', firstName);
+            elt.setAttribute('lastName', lastName);
+
+            newValue = elt;
+            autoSize = true;
+          }
+
+          cellLabelChanged.apply(this, arguments);
         };
 
         changeDefaultStyle(graph);
