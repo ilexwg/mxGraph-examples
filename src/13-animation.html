@@ -20,6 +20,18 @@
       box-shadow: 0 0 10px #ccc;
       background: url(./images/grid.gif);
     }
+
+    .flow {
+      stroke-dasharray: 8;
+      animation: dash 0.5s linear;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -16;
+      }
+    }
   </style>
 </head>
 
@@ -53,17 +65,35 @@
         // get the default parent for inserting new cells
         // this is normally the first child of the root (ie. layer 0)
         const parent = graph.getDefaultParent();
-
+        let pipe = null;
+        let pipe2 = null;
         // add cells to the model
         graph.getModel().beginUpdate();
         try {
           const pump = graph.insertVertex(parent, null, 'Pump', 100, 100, 60, 60, vertexStyle);
           const tank = graph.insertVertex(parent, null, 'Tank', 300, 300, 60, 60, vertexStyle);
-          const pipe = graph.insertEdge(parent, null, '', pump, tank, edgeStyle);
+          const drain = graph.insertVertex(parent, null, 'Drain', 100, 500, 60, 60, vertexStyle);
+          pipe = graph.insertEdge(parent, null, '', pump, tank, edgeStyle);
           pipe.geometry.points = [new mxPoint(330, 130)];
+          pipe2 = graph.insertEdge(parent, null, '', tank, drain, edgeStyle);
+          pipe2.geometry.points = [new mxPoint(130, 330)];
         } finally {
           graph.getModel().endUpdate();
         }
+
+        const pipeState = graph.view.getState(pipe);
+        const path = pipeState.shape.node.getElementsByTagName('path');
+        path[0].removeAttribute('visibility');
+        path[0].setAttribute('stroke-width', 6);
+        path[0].setAttribute('stroke', 'lightgray');
+        path[1].classList.add('flow');
+
+        const pipeState2 = graph.view.getState(pipe2);
+        const path2 = pipeState2.shape.node.getElementsByTagName('path');
+        path2[0].removeAttribute('visibility');
+        path2[0].setAttribute('stroke-width', 6);
+        path2[0].setAttribute('stroke', 'lightgray');
+        path2[1].classList.add('flow');
       }
     }
 
