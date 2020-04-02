@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>14-anchors</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #ccc;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    // override connection points
+    mxGraph.prototype.getAllConnectionConstraints = function (terminal, source) {
+      if (terminal != null && terminal.shape != null) {
+        if (terminal.shape.stencil != null) {
+          if (terminal.shape.stencil.constraints != null) {
+            return terminal.shape.stencil.constraints;
+          }
+        } else if (terminal.shape.constraints != null) {
+          return terminal.shape.constraints;
+        }
+      }
+
+      return null;
+    }
+
+    // define the default constraints for all shapes
+    mxShape.prototype.constraints = [
+      new mxConnectionConstraint(new mxPoint(0.25, 0)),
+      new mxConnectionConstraint(new mxPoint(0.5, 0)),
+      new mxConnectionConstraint(new mxPoint(0.75, 0)),
+      new mxConnectionConstraint(new mxPoint(1, 0.25)),
+      new mxConnectionConstraint(new mxPoint(1, 0.5)),
+      new mxConnectionConstraint(new mxPoint(1, 0.75)),
+      new mxConnectionConstraint(new mxPoint(0.25, 1)),
+      new mxConnectionConstraint(new mxPoint(0.5, 1)),
+      new mxConnectionConstraint(new mxPoint(0.75, 1)),
+      new mxConnectionConstraint(new mxPoint(0, 0.25)),
+      new mxConnectionConstraint(new mxPoint(0, 0.5)),
+      new mxConnectionConstraint(new mxPoint(0, 0.75)),
+    ];
+
+    function main(container) {
+      // Check if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Display an error message if the browser is not supported
+        mxUtils.error('This browser is not supported!', 300, true);
+      } else {
+        // disable the built-in context-menu
+        mxEvent.disableContextMenu(container);
+
+        // create the graph
+        const graph = new mxGraph(container);
+
+        // enable graph connectable
+        graph.setConnectable(true);
+
+        // disable dangling edges
+        graph.setAllowDanglingEdges(false);
+
+        // enable rubberband selection
+        new mxRubberband(graph);
+
+        // set the default vertex style
+        const vertexStyle = graph.getStylesheet().getDefaultVertexStyle();
+        vertexStyle[mxConstants.STYLE_FILLCOLOR] = '#ece3e4';
+        vertexStyle[mxConstants.STYLE_STROKECOLOR] = '#a19eb5';
+        vertexStyle[mxConstants.STYLE_STROKEWIDTH] = 2;
+        vertexStyle[mxConstants.STYLE_ROUNDED] = true;
+        vertexStyle[mxConstants.STYLE_FONTCOLOR] = '#334876';
+        vertexStyle[mxConstants.STYLE_FONTSIZE] = 14;
+        vertexStyle[mxConstants.STYLE_FONTFAMILY] = 'Montserrat';
+
+        // set the default edge style
+        const edgeStyle = graph.getStylesheet().getDefaultEdgeStyle();
+        edgeStyle[mxConstants.STYLE_STROKECOLOR] = '#a19eb5';
+        edgeStyle[mxConstants.STYLE_STROKEWIDTH] = 2;
+        edgeStyle[mxConstants.STYLE_ENDARROW] = 'block';
+
+        // enable connect preview for the default edge style
+        graph.connectionHandler.createEdgeState = function (me) {
+          const edge = this.graph.createEdge(null, null, null, null, null, 'rounded=1;');
+
+          // change default valid color for preview
+          mxConstants.VALID_COLOR = 'yellowgreen';
+
+          return new mxCellState(this.graph.view, edge, this.graph.getCellStyle(edge));
+        };
+
+        // specify the default edge style
+        graph.getStylesheet().getDefaultEdgeStyle()['edgeStyle'] = 'orthogonalEdgeStyle';
+
+        // get the default parent for inserting new cells
+        // this is normally the first child of the root (ie. layer 0)
+        const parent = graph.getDefaultParent();
+
+        // add cells to the model
+        graph.getModel().beginUpdate();
+        try {
+          const v1 = graph.insertVertex(parent, null, 'Hello', 100, 100, 100, 100);
+          const v2 = graph.insertVertex(parent, null, 'World', 300, 300, 100, 100);
+          // const e1 = graph.insertEdge(parent, null, '', v1, v2);
+        } finally {
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
