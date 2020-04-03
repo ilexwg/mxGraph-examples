@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>15-validation</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    #container {
+      width: 600px;
+      height: 600px;
+      margin: 60px auto;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: url(./images/grid.gif);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script>
+    mxBasePath = '../mxgraph';
+  </script>
+  <script src="../mxgraph/mxClient.js"></script>
+  <script>
+    function main(container) {
+      // Checks if the browser is supported
+      if (!mxClient.isBrowserSupported()) {
+        // Displays an error message if the browser is not supported.
+        mxUtils.error('Browser is not supported!', 200, false);
+      } else {
+        const xmlDocument = mxUtils.createXmlDocument();
+        const sourceNode = xmlDocument.createElement('Source');
+        const targetNode = xmlDocument.createElement('Target');
+        const subtargetNode = xmlDocument.createElement('Subtarget');
+
+        // Creates the graph inside the given container
+        var graph = new mxGraph(container);
+        graph.setConnectable(true);
+        graph.setTooltips(true);
+        graph.setAllowDanglingEdges(false);
+        graph.setMultigraph(false);
+
+        // Enables rubberband selection
+        new mxRubberband(graph);
+
+        // set the default vertex style
+        const vertexStyle = graph.getStylesheet().getDefaultVertexStyle();
+        vertexStyle[mxConstants.STYLE_FILLCOLOR] = '#ece3e4';
+        vertexStyle[mxConstants.STYLE_STROKECOLOR] = '#a19eb5';
+        vertexStyle[mxConstants.STYLE_STROKEWIDTH] = 2;
+        vertexStyle[mxConstants.STYLE_ROUNDED] = true;
+        vertexStyle[mxConstants.STYLE_FONTCOLOR] = '#334876';
+        vertexStyle[mxConstants.STYLE_FONTSIZE] = 14;
+        vertexStyle[mxConstants.STYLE_FONTFAMILY] = 'Montserrat';
+
+        // set the default edge style
+        const edgeStyle = graph.getStylesheet().getDefaultEdgeStyle();
+        edgeStyle[mxConstants.STYLE_STROKECOLOR] = '#a19eb5';
+        edgeStyle[mxConstants.STYLE_STROKEWIDTH] = 2;
+        edgeStyle[mxConstants.STYLE_ENDARROW] = 'block';
+
+        graph.multiplicities.push(new mxMultiplicity(true, 'Source', null, null, 1, 2, ['Target'],
+          'Source must have 1 or 2 Targets!', 'Source must connect to Target!'));
+
+        graph.multiplicities.push(new mxMultiplicity(false, 'Source', null, null, 0, 0, null,
+          'Source must have no incoming edge!', null));
+
+        graph.multiplicities.push(new mxMultiplicity(false, 'Target', null, null, 1, 1, ['Source'],
+          'Target must have 1 Source!', 'Target must connect from Source'));
+
+        // remove cells when [DELETE] is pressed
+        const keyHandler = new mxKeyHandler(graph);
+        keyHandler.bindKey(46, (evt) => {
+          if (graph.isEnabled()) {
+            graph.removeCells();
+          }
+        });
+
+        graph.getModel().addListener(mxEvent.CHANGE, (sender, evt) => {
+          graph.validateGraph();
+        });
+
+        // Gets the default parent for inserting new cells. This
+        // is normally the first child of the root (ie. layer 0).
+        var parent = graph.getDefaultParent();
+
+        // Adds cells to the model in a single step
+        graph.getModel().beginUpdate();
+        try {
+          var source1 = graph.insertVertex(parent, null, sourceNode, 100, 100, 100, 40);
+          var target11 = graph.insertVertex(parent, null, targetNode, 300, 100, 100, 40);
+          var target12 = graph.insertVertex(parent, null, targetNode.cloneNode(true), 300, 200, 100, 40);
+          var source2 = graph.insertVertex(parent, null, sourceNode.cloneNode(true), 100, 400, 100, 40);
+          var target21 = graph.insertVertex(parent, null, targetNode.cloneNode(true), 300, 400, 100, 40);
+          var subTarget = graph.insertVertex(parent, null, subtargetNode, 300, 500, 100, 40);
+
+          const e1 = graph.insertEdge(parent, null, '', source1, target11);
+          const e2 = graph.insertEdge(parent, null, '', source1, target12);
+          const e3 = graph.insertEdge(parent, null, '', source2, target21);
+        } finally {
+          // Updates the display
+          graph.getModel().endUpdate();
+        }
+      }
+    }
+
+    window.onload = function () {
+      const container = document.getElementById('container');
+
+      main(container);
+    };
+  </script>
+</body>
+
+</html>
